@@ -6,6 +6,9 @@ app = Flask(__name__)
 def home():
     return 'Hello, World!'
 
-@app.route('/about')
-def about():
-    return 'About'
+@app.route('/health', methods=['GET'])
+def health_check():
+    return {"status": "healthy"}
+
+if __name__ == "__main__":
+    app.run()    
