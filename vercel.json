@@ -1,5 +1,26 @@
 {
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/api/index" }
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/index.py",
+      "use": "@vercel/python",
+      "config": { "runtime": "python3.9" }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/slack/translate",
+      "methods": ["POST"],
+      "dest": "/api/index.py"
+    },
+    {
+      "src": "/api/health",
+      "methods": ["GET"],
+      "dest": "/api/index.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/api/index.py"
+    }
   ]
 }
