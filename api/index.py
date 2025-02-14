@@ -117,6 +117,29 @@ def handle_message(event_data):
     """Event handler for messages"""
     bot.handle_message(event_data["event"])
 
+@app.route('/api/slack/commands', methods=['POST'])
+def handle_command():
+    """Handle slash commands from Slack"""
+    try:
+        if request.form.get('command') == '/translate-settings':
+            trigger_id = request.form.get('trigger_id')
+            channel_id = request.form.get('channel_id')
+            
+            if not trigger_id or not channel_id:
+                return Response("Missing required data", status=400)
+            
+            print("Slack command running...")
+            print(trigger_id, channel_id)
+            # bot.open_settings_modal(trigger_id, channel_id)
+            
+            return Response("Opening translation settings...", status=200)
+            
+        return Response("Unknown command", status=400)
+        
+    except Exception as e:
+        print(f"Error handling command: {e}")
+        return Response(f"Error: {str(e)}", status=500)
+    
 @app.route('/api/slack/interactions', methods=['POST'])
 def handle_interaction():
     """Handle interactions from modals and other interactive components"""
