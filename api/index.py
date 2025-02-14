@@ -121,20 +121,16 @@ def handle_message(event_data):
 def handle_interaction():
     """Handle interactions from modals and other interactive components"""
     try:
-        payload = request.form.get('payload')
-        print("json payload: ", payload)
-        if not payload:
-            return Response("Invalid payload", status=400)
+        payload = json.loads(request.form.get('payload', '{}'))
         
-        payload = json.loads(payload)
-        
+        if payload.get('type') == 'view_submission' and \
+           payload.get('view', {}).get('callback_id') == 'language_settings':
+            # ... rest of your modal submission handling code ...
+            pass
+            
     except Exception as e:
-        print(f"Error parsing payload: {e}")
-        return Response("Invalid payload", status=400)
-    
-    # print("payload", payload)    
-    # if not payload:
-    #     return Response("Invalid payload", status=400)
+        print(f"Error handling interaction: {e}")
+        return Response(str(e), status=500)
     
     return Response("", status=200)
 
