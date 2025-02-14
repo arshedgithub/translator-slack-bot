@@ -36,7 +36,6 @@ class SlackTranslateBot:
     def handle_message(self, event_data):
         """Handle message events"""
         try:
-            # Ignore bot messages and edited messages
             if (
                 'bot_id' in event_data or 
                 'subtype' in event_data or 
@@ -50,22 +49,31 @@ class SlackTranslateBot:
                 
             channel_id = event_data['channel']
             message_ts = event_data['ts']
+            user_id = event_data.get('user', '')
             
             try:
                 source_lang = detect(text)
                 print(f"Detected language: {source_lang}")
                 
-                # Only translate if not English
                 if source_lang != 'en':
                     translated = self.translator.translate(text)
                     print(f"Translated text: {translated}")
                     
-                    # Post a reply instead of updating the original message
-                    self.client.chat_postMessage(
-                        channel=channel_id,
-                        thread_ts=message_ts,
-                        text=f"🌐 English:\n```{translated}```"
-                    )
+                    try:
+                        self.client.chat_update(
+                            channel=channel_id,
+                            ts=message_ts,
+                            text=f"{text}\n\n🌐 English:\n```{translated}```"
+                        )
+                    except SlackApiError as e:
+                        if e.response['error'] == 'cant_update_message':
+                            self.client.chat_postMessage(
+                                channel=channel_id,
+                                thread_ts=message_ts,
+                                text=f"🌐 English:\n```{translated}```"
+                            )
+                        else:
+                            raise e
                     
             except LangDetectException as e:
                 print(f"Language detection error: {e}")
@@ -75,12 +83,12 @@ class SlackTranslateBot:
         except Exception as e:
             print(f"Error handling message: {e}")
 
+
 bot = SlackTranslateBot()
 
 @slack_events_adapter.on("message")
 def handle_message(event_data):
     """Event handler for messages"""
-    print("Message received:", event_data)
     bot.handle_message(event_data["event"])
 
 
