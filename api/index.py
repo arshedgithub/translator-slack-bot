@@ -7,8 +7,9 @@ from slack_sdk.errors import SlackApiError
 from flask import Flask, request, Response
 from langdetect import detect, LangDetectException
 from slackeventsapi import SlackEventAdapter
-import json
+import sqlite3
 from functools import lru_cache
+import json
 
 env_path = Path('.') / '.env'
 load_dotenv(env_path)
@@ -20,6 +21,17 @@ slack_events_adapter = SlackEventAdapter(
     '/api/slack/events',
     app
 )
+
+def init_db():
+    conn = sqlite3.connect('translator_settings.db')
+    c = conn.cursor()
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS channel_settings
+        (channel_id TEXT PRIMARY KEY, target_language TEXT DEFAULT 'en')
+    ''')
+    conn.commit()
+    conn.close()
+    print("database connection established")
 
 class SlackTranslateBot:
     def __init__(self):
@@ -36,6 +48,7 @@ class SlackTranslateBot:
         
         self.BOT_ID = self.client.auth_test()['user_id']
         self.processed_messages = set()
+        init_db()
         
     def handle_message(self, event_data):
         """Handle message events"""
