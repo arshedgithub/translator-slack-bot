@@ -31,7 +31,6 @@ def init_db():
     ''')
     conn.commit()
     conn.close()
-    print("database connection established")
 
 class SlackTranslateBot:
     def __init__(self):
@@ -48,6 +47,7 @@ class SlackTranslateBot:
         
         self.BOT_ID = self.client.auth_test()['user_id']
         self.processed_messages = set()
+        self.supported_languages = GoogleTranslator().get_supported_languages(as_dict=True)
         init_db()
         
     def handle_message(self, event_data):
@@ -117,11 +117,30 @@ def handle_message(event_data):
     """Event handler for messages"""
     bot.handle_message(event_data["event"])
 
+@app.route('/api/slack/interactions', methods=['POST'])
+def handle_interaction():
+    """Handle interactions from modals and other interactive components"""
+    try:
+        payload = request.form.get('payload')
+        print("json payload: ", payload)
+        if not payload:
+            return Response("Invalid payload", status=400)
+        
+        payload = json.loads(payload)
+        
+    except Exception as e:
+        print(f"Error parsing payload: {e}")
+        return Response("Invalid payload", status=400)
+    
+    # print("payload", payload)    
+    # if not payload:
+    #     return Response("Invalid payload", status=400)
+    
+    return Response("", status=200)
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
     return {"status": "healthy"}
-
 
 @app.route('/', methods=['GET'])
 def home():
