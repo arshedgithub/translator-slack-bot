@@ -8,6 +8,7 @@ from flask import Flask, request, Response
 from langdetect import detect, LangDetectException
 from slackeventsapi import SlackEventAdapter
 import json
+from functools import lru_cache
 
 env_path = Path('.') / '.env'
 load_dotenv(env_path)
@@ -32,7 +33,10 @@ class SlackTranslateBot:
             
         self.client = WebClient(token=self.token)
         self.translator = GoogleTranslator(source='auto', target='en')
-    
+        
+        self.BOT_ID = self.client.auth_test()['user_id']
+        self.processed_messages = set()
+        
     def handle_message(self, event_data):
         """Handle message events"""
         try:
@@ -50,6 +54,15 @@ class SlackTranslateBot:
             channel_id = event_data['channel']
             message_ts = event_data['ts']
             user_id = event_data.get('user', '')
+            
+            # Ignore translating the messages from the bot itself
+            if user_id == self.BOT_ID:
+                return
+            
+            message_key = f"{channel_id}-{message_ts}"
+            if message_key in self.processed_messages:
+                return
+            self.processed_messages.add(message_key)
             
             try:
                 source_lang = detect(text)
@@ -100,6 +113,7 @@ def health_check():
 @app.route('/', methods=['GET'])
 def home():
     return "Slack Translator Bot is running!"
+
 
 if __name__ == "__main__":
     import logging
