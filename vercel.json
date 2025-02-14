@@ -4,17 +4,24 @@
     {
       "src": "api/index.py",
       "use": "@vercel/python",
-      "config": { "runtime": "python3.9" }
+      "config": { 
+        "runtime": "python3.9"
+      }
     }
   ],
   "routes": [
     {
-      "src": "/api/slack/translate",
+      "src": "/api/slack/events",
       "methods": ["POST"],
       "dest": "/api/index.py"
     },
     {
       "src": "/api/health",
+      "methods": ["GET"],
+      "dest": "/api/index.py"
+    },
+    {
+      "src": "/",
       "methods": ["GET"],
       "dest": "/api/index.py"
     },
