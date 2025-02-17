@@ -237,16 +237,30 @@ def handle_interaction():
     """Handle interactions from modals and other interactive components"""
     try:
         payload = json.loads(request.form.get('payload', '{}'))
-        
+        print("\n\n\nReceived interaction payload:", json.dumps(payload, indent=2))  # Log the payload
+
         if payload.get('type') == 'view_submission' and \
            payload.get('view', {}).get('callback_id') == 'language_settings':
-            # ... rest of your modal submission handling code ...
-            pass
-            
+            selected_language = payload['view']['state']['values']['target_language']['language_select']['selected_option']['value']
+            channel_id = payload['view']['private_metadata']
+            print("selected_language: ", selected_language)
+            print("Channel: ", channel_id)
+
+            conn = sqlite3.connect('translator_settings.db')
+            c = conn.cursor()
+            c.execute('''
+                INSERT OR REPLACE INTO channel_settings (channel_id, target_language)
+                VALUES (?, ?)
+            ''', (channel_id, selected_language))
+            conn.commit()
+            conn.close()
+
+            return Response(status=200)
+
     except Exception as e:
         print(f"Error handling interaction: {e}")
         return Response(str(e), status=500)
-    
+
     return Response("", status=200)
 
 @app.route('/api/health', methods=['GET'])
