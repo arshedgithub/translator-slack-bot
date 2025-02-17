@@ -50,6 +50,101 @@ class SlackTranslateBot:
         self.supported_languages = GoogleTranslator().get_supported_languages(as_dict=True)
         init_db()
         
+    def open_settings_modal(self, trigger_id, channel_id):
+        current_language = "ja"
+        
+        common_languages = {
+            'en': 'English',
+            'ja': 'Japanese',
+            'es': 'Spanish',
+            'fr': 'French',
+            'de': 'German',
+            'it': 'Italian',
+            'pt': 'Portuguese',
+            'ru': 'Russian',
+            'ko': 'Korean',
+            'zh': 'Chinese',
+            'ar': 'Arabic',
+            'hi': 'Hindi',
+            'id': 'Indonesian',
+            'ms': 'Malay'
+        }
+        
+        options = [
+            {
+                "text": {
+                    "type": "plain_text",
+                    "text": f"{name}"
+                },
+                "value": code
+            }
+            for code, name in common_languages.items()
+        ]
+        
+        initial_option = next(
+            (opt for opt in options if opt["value"] == current_language),
+            options[0] # default first option
+        )
+
+        modal_payload = {
+            "type": "modal",
+            "callback_id": "language_settings",
+            "private_metadata": channel_id,
+            "title": {
+                "type": "plain_text",
+                "text": "Translation Settings",
+                "emoji": True
+            },
+            "submit": {
+                "type": "plain_text",
+                "text": "Save",
+                "emoji": True
+            },
+            "close": {
+                "type": "plain_text",
+                "text": "Cancel",
+                "emoji": True
+            },
+            "blocks": [
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": "Choose the target language for translations in this channel:"
+                    }
+                },
+                {
+                    "type": "input",
+                    "block_id": "target_language",
+                    "element": {
+                        "type": "static_select",
+                        "placeholder": {
+                            "type": "plain_text",
+                            "text": "Select a language",
+                            "emoji": True
+                        },
+                        "options": options,
+                        "initial_option": initial_option,
+                        "action_id": "language_select"
+                    },
+                    "label": {
+                        "type": "plain_text",
+                        "text": "Target Language",
+                        "emoji": True
+                    }
+                }
+            ]
+        }
+
+        try:
+            self.client.views_open(
+                trigger_id=trigger_id,
+                view=modal_payload
+            )
+        except SlackApiError as e:
+            print(f"Error opening modal: {e.response['error']}")
+            raise e
+    
     def handle_message(self, event_data):
         """Handle message events"""
         try:
@@ -128,10 +223,7 @@ def handle_command():
             if not trigger_id or not channel_id:
                 return Response("Missing required data", status=400)
             
-            print("Slack command running...")
-            print(trigger_id, channel_id)
-            # bot.open_settings_modal(trigger_id, channel_id)
-            
+            bot.open_settings_modal(trigger_id, channel_id)
             return Response("Opening translation settings...", status=200)
             
         return Response("Unknown command", status=400)
