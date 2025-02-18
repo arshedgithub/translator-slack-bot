@@ -312,8 +312,3 @@ def handle_interaction():
         return Response(str(e), status=500)
 
     return Response("", status=200)
-
-if __name__ == "__main__":
-    # import logging
-    # logging.basicConfig(level=logging.DEBUG)
-    app.run(debug=True)
