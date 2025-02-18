@@ -89,7 +89,7 @@ class SlackTranslateBot:
                         response = self.client.chat_postMessage(
                             channel=channel_id,
                             thread_ts=message_ts,
-                            text=f"Translated:\n```{translated_text}```"
+                            text=f"Translated:\n```{translated_text}\n\n({text})```"
                         )
                         print(f"Posted translation message: {response}")
                     except SlackApiError as e:
@@ -117,5 +117,3 @@ def get():
 if __name__ == "__main__":
     if os.environ.get("VERCEL_ENV") != "production":
         app.run(debug=True)
-
-handler = app  # vercel entry point
