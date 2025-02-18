@@ -16,16 +16,6 @@
       "dest": "/api/index.py"
     },
     {
-      "src": "/api/slack/interactions",
-      "methods": ["POST"],
-      "dest": "/api/index.py"
-    },
-    {
-      "src": "/api/health",
-      "methods": ["GET"],
-      "dest": "/api/index.py"
-    },
-    {
       "src": "/",
       "methods": ["GET"],
       "dest": "/api/index.py"
