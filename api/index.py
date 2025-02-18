@@ -131,7 +131,8 @@ class SlackTranslateBot:
                 elif source_lang == 'en':
                     translated_text = self.translate_message(text, 'en', 'ja')
                 else:
-                    print("Message is neither Japanese nor English. No translation needed.")
+                    print("Message is neither Japanese nor English.")
+                    translated_text = self.translate_message(text, 'en', 'ja')
                     return
 
                 if translated_text:
