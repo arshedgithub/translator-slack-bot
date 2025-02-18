@@ -15,7 +15,6 @@ env_path = Path('.') / '.env'
 load_dotenv(env_path)
 
 app = Flask(__name__)
-handler = app  # vercel entry point
 
 slack_events_adapter = SlackEventAdapter(
     os.environ.get('SLACK_SIGNING_SECRET'),
@@ -319,3 +318,5 @@ if __name__ == "__main__":
         # import logging
         # logging.basicConfig(level=logging.DEBUG)
         app.run(debug=True)
+
+handler = app  # vercel entry point
