@@ -2,7 +2,7 @@ import re
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 from deep_translator import GoogleTranslator
-from langdetect import detect, LangDetectException
+from langdetect import detect_langs
 from api.config import SLACK_TOKEN
 
 class SlackTranslateBot:
@@ -73,6 +73,26 @@ class SlackTranslateBot:
             print(f"Translation error: {e}")
             return None
     
+    def detect_language_with_confidence(text):
+        try:
+            results = detect_langs(text)
+            
+            # Check the confidence of the top result
+            if results and results[0].prob > 0.5:
+                return results[0].lang
+            
+            # If below threshold, fall back to simple heuristics
+            jp_chars = sum(1 for char in text if ord(char) > 0x3000)
+            if jp_chars > len(text) * 0.3:  # If 30% Japanese characters
+                return 'ja'
+            return 'en'
+        except:
+            # character-based detection for very short texts
+            jp_chars = sum(1 for char in text if ord(char) > 0x3000)
+            if jp_chars > 0:
+                return 'ja'
+            return 'en'
+    
     def handle_message(self, event_data):
         """Handle message events"""
         try:
@@ -100,15 +120,12 @@ class SlackTranslateBot:
             self.processed_messages.add(message_key)
             
             try:
-                source_lang = detect(text)
+                source_lang = self.detect_language_with_confidence(text)
                 print(f"Detected language: {source_lang}")
 
                 if source_lang == 'ja':
                     translated_text = self.translate_message(text, 'ja', 'en')
-                elif source_lang == 'en':
-                    translated_text = self.translate_message(text, 'en', 'ja')
                 else:
-                    print("Message is neither Japanese nor English.")
                     translated_text = self.translate_message(text, 'en', 'ja')
                     return
 
