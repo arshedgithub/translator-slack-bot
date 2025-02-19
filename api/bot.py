@@ -2,7 +2,7 @@ import re
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 from deep_translator import GoogleTranslator
-from langdetect import detect_langs
+from langdetect import detect_langs, LangDetectException
 from api.config import SLACK_TOKEN
 
 class SlackTranslateBot:
@@ -73,7 +73,7 @@ class SlackTranslateBot:
             print(f"Translation error: {e}")
             return None
     
-    def detect_language_with_confidence(text):
+    def detect_language_with_confidence(self, text):
         try:
             results = detect_langs(text)
             
@@ -127,7 +127,6 @@ class SlackTranslateBot:
                     translated_text = self.translate_message(text, 'ja', 'en')
                 else:
                     translated_text = self.translate_message(text, 'en', 'ja')
-                    return
 
                 if translated_text:
                     # Format original text for display
